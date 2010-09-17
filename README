@@ -1,0 +1,3 @@
+Simple sample project that illustrates using Avro MapReduce API with Avro reflection API.
+Currently requires 1.5.0-SNAPSHOT.jar
+To use with CDH you need to move the older versions of jackson-*-asl-1.0.1.jar out of HADOOP_HOME/lib

@@ -1,0 +1,43 @@
+apply plugin: 'java'
+apply plugin: 'eclipse'
+
+String ivyPattern = '/[organisation]/[module]/[revision]/ivy-[revision].xml'
+String artifactPattern = '/[organisation]/[module]/[revision]/[artifact]-[revision](.[ext])'
+
+repositories {
+    mavenCentral()
+    add(new org.apache.ivy.plugins.resolver.URLResolver()) {
+        name = 'cdh'
+        validate = false
+        addIvyPattern('https://repository.cloudera.com/content/repositories/releases' + ivyPattern)
+        addArtifactPattern('https://repository.cloudera.com/content/repositories/releases' + artifactPattern)
+        m2compatible = true
+    }
+    flatDir name: 'localRepository', dirs: 'lib'
+}
+dependencies {
+    //compile group:'org.apache.hadoop', name: 'hadoop-core', version: '0.20.2'
+    compile group:'com.cloudera.hadoop', name: 'hadoop-core', version: '0.20.2-320'
+    //compile group:'com.googlecode.json-simple', name:'json-simple', version: '1.1'
+    //compile group:'org.json', name:'json', version: '20090211'
+    testCompile group: 'junit', name: 'junit', version: '4.+'
+    compile group:'com.thoughtworks.paranamer', name:'paranamer', version:'2.2'
+    compile group:'org.codehaus.jackson', name:'jackson-core-asl', version:'1.4.2'
+    compile group:'org.codehaus.jackson', name:'jackson-mapper-asl', version:'1.4.2'
+    compile group: 'org.apache.avro', name:'avro', version:'1.5.0-SNAPSHOT' 
+    compile group: 'commons-cli', name:'commons-cli', version:'1.2' 
+}
+skipJars = [ "hadoop", "log", "avalon", "servlet", "commons-logging", "junit", "jline" ]
+skipJar = {
+   for (j in skipJars) if (it.startsWith(j)) return true;
+   return false;
+}
+jar.doFirst {
+    merge = []
+    for(file in configurations.compile) {
+        if (!skipJar(file.name))
+           merge.add(file.isDirectory() ? file : zipTree(file))
+    }
+    from merge
+}
+
